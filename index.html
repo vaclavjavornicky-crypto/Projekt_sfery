@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>Pootočení obrázku na pozadí</title>
+    <style>
+        /* CSS pro vycentrování všeho na stránce */
+        body {
+            margin: 0;
+            height: 100vh; /* Roztáhne tělo na celou výšku obrazovky */
+            display: flex;
+            flex-direction: column; /* Prvky pod sebou */
+            justify-content: center; /* Vertikální vycentrování */
+            align-items: center; /* Horizontální vycentrování */
+            background-color: #f0f0f0; /* Světlé pozadí pro kontrast */
+            font-family: sans-serif;
+        }
+
+        .ovladani {
+            margin-bottom: 20px;
+            z-index: 10; /* Zajistí, že ovládání bude vždy nad obrázky */
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        /* Kontejner pro obrázky - definuje velikost prostoru, kde se překrývají */
+        .scena {
+            position: relative;
+            width: 500px;  /* Nastavte podle velikosti vašich obrázků */
+            height: 500px; /* Nastavte podle velikosti vašich obrázků */
+        }
+
+        .scena img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%; /* Vyplní celý kontejner .scena */
+            height: 100%; /* Vyplní celý kontejner .scena */
+            
+            /* Důležité pro vycentrování rotace přesně na střed */
+            transform-origin: center center; 
+            object-fit: contain;
+        }
+
+        #obr1 {
+            z-index: 2; /* Popředí - je statický, nehýbe se */
+        }
+
+        #obr2 {
+            z-index: 1; /* Pozadí - tento se bude točit */
+            
+            /* Výchozí pozice (úhel 0 stupňů) */
+            transform: rotate(0deg); 
+            
+            /* Volitelné: Přidá plynulou animaci při pootočení (např. 0.5 sekundy) */
+            /* transition: transform 0.5s ease-out; */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ovladani">
+        <h2>Zadejte pozici (1 až 12)</h2>
+        <input type="number" id="poziceUzivatele" min="1" max="12" placeholder="Zadejte číslo...">
+        <button onclick="nastavNatoceni()">Nastavit</button>
+    </div>
+
+    <div class="scena">
+        <img id="obr2" src="2.png" alt="Obrázek na pozadí">
+        <img id="obr1" src="1.png" alt="Obrázek v popředí">
+    </div>
+
+    <script>
+        function nastavNatoceni() {
+            // 1. Získáme textové pole a prvek obrázku z pozadí
+            let inputPole = document.getElementById("poziceUzivatele");
+            let obrVpozadi = document.getElementById("obr2");
+
+            // 2. Převedeme text na celé číslo
+            let cislo = parseInt(inputPole.value);
+
+            // 3. Zkontrolujeme validitu (zda je to číslo a zda je v rozmezí 1-12)
+            if (isNaN(cislo) || cislo < 1 || cislo > 12) {
+                alert("Prosím zadejte platné číslo od 1 do 12.");
+                return; // Ukončíme funkci, dál nepokračujeme
+            }
+
+            // 4. Výpočet úhlu: 
+            // Podle zadání: 1 = 0°, 12 = 330°, krok je 30°.
+            // Vzorec: (zadané číslo - 1) * 30 stupňů.
+            // Příklad pro číslo 1: (1-1)*30 = 0°
+            // Příklad pro číslo 2: (2-1)*30 = 30°
+            // Příklad pro číslo 12: (12-1)*30 = 330°
+            let uhel = (cislo - 1) * 30;
+
+            // 5. Aplikujeme rotaci pomocí CSS
+            // Výsledek bude vypadat např. jako: transform: rotate(150deg);
+            obrVpozadi.style.transform = "rotate(" + uhel + "deg)";
+        }
+    </script>
+
+</body>
+</html>
