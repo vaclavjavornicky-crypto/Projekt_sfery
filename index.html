@@ -2,107 +2,348 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <title>Pootočení obrázku na pozadí</title>
+    <title>Rozložení na dvě poloviny</title>
     <style>
-        /* CSS pro vycentrování všeho na stránce */
+        /* Hlavní rozvržení stránky */
         body {
             margin: 0;
-            height: 100vh; /* Roztáhne tělo na celou výšku obrazovky */
+            height: 100vh; /* Stránka zabere přesně celou výšku okna */
             display: flex;
-            flex-direction: column; /* Prvky pod sebou */
-            justify-content: center; /* Vertikální vycentrování */
-            align-items: center; /* Horizontální vycentrování */
-            background-color: #f0f0f0; /* Světlé pozadí pro kontrast */
+            flex-direction: row; /* ZMĚNA: Prvky se řadí vedle sebe do řádku */
+            background-color: #eeeeee;
             font-family: sans-serif;
+            box-sizing: border-box;
+            overflow: hidden; /* Zabrání zbytečným posuvníkům */
+        }
+
+        /* Definice levé a pravé poloviny */
+        .levy-panel, .pravy-panel {
+            flex: 1; /* Každý panel zabere přesně 50 % volného místa */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        /* Mírné odlišení pozadí levého panelu, aby rozdělení vyniklo (volitelné) */
+        .levy-panel {
+            background-color: #e0e0e0;
+            border-right: 2px solid #ccc;
         }
 
         .ovladani {
-            margin-bottom: 20px;
-            z-index: 10; /* Zajistí, že ovládání bude vždy nad obrázky */
-            background: rgba(255, 255, 255, 0.8);
-            padding: 10px;
+            background: white;
+            padding: 30px 40px;
             border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            z-index: 10;
         }
 
-        /* Kontejner pro obrázky - definuje velikost prostoru, kde se překrývají */
+        .ovladani h2 {
+            margin-top: 0;
+        }
+
+        .ovladani input {
+            padding: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-align: center;
+            width: 150px;
+        }
+
+        .ovladani button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #0078D7;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        .ovladani button:hover {
+            background-color: #005a9e;
+        }
+
         .scena {
             position: relative;
-            width: 500px;  /* Nastavte podle velikosti vašich obrázků */
-            height: 500px; /* Nastavte podle velikosti vašich obrázků */
+            width: 600px;
+            height: 600px;
+            background-image: 
+                linear-gradient(transparent 49.5%, #ddd 49.5%, #ddd 50.5%, transparent 50.5%),
+                linear-gradient(90deg, transparent 49.5%, #ddd 49.5%, #ddd 50.5%, transparent 50.5%);
         }
 
-        .scena img {
+        #kreslici-platno {
             position: absolute;
+            width: 100%;
+            height: 100%;
             top: 0;
             left: 0;
-            width: 100%; /* Vyplní celý kontejner .scena */
-            height: 100%; /* Vyplní celý kontejner .scena */
-            
-            /* Důležité pro vycentrování rotace přesně na střed */
-            transform-origin: center center; 
-            object-fit: contain;
+            pointer-events: none;
+            z-index: 1; 
+            transition: opacity 0.2s ease-in-out;
         }
 
-        #obr1 {
-            z-index: 2; /* Popředí - je statický, nehýbe se */
-            width: 50%;
-            height: 50%;
-            top: 25%;  /* Odsazení shora: 25% + 50% velikost obrázku + 25% zbytek = 100% */
-            left: 25%; /* To samé zleva, zajistí perfektní střed */
+        #vrstva-vnitrni, #vrstva-vnejsi {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            transform-origin: center center;
+            pointer-events: none; 
         }
 
-        #obr2 {
-            z-index: 1; /* Pozadí - tento se bude točit */
-            
-            /* Výchozí pozice (úhel 0 stupňů) */
-            transform: rotate(0deg); 
-            
-            /* Volitelné: Přidá plynulou animaci při pootočení (např. 0.5 sekundy) */
-            /* transition: transform 0.5s ease-out; */
+        #vrstva-vnitrni { z-index: 2; }
+        
+        #vrstva-vnejsi { 
+            transition: transform 0.5s ease-out; 
+            z-index: 3; 
+        }
+
+        .maly-obrazek {
+            position: absolute;
+            width: 60px;  
+            height: 60px; 
+            transform: translate(-50%, -50%) rotate(0deg);
+            background-color: #0078D7;
+            border-radius: 50%;
+            color: transparent;
+            font-size: 0;
+            transition: transform 0.5s ease-out;
+            pointer-events: auto; 
         }
     </style>
 </head>
 <body>
 
-    <div class="ovladani">
-        <h2>Zadejte pozici (1 až 12)</h2>
-        <input type="number" id="poziceUzivatele" min="1" max="12" placeholder="Zadejte číslo...">
-        <button onclick="nastavNatoceni()">Nastavit</button>
+    <!-- Levá polovina obrazovky -->
+    <div class="levy-panel">
+        <div class="ovladani">
+            <h2>Zadejte pozici (1 až 12)</h2>
+            <input type="number" id="poziceUzivatele" min="1" max="12" placeholder="Zadejte číslo..." value="1">
+            <br>
+            <button onclick="nastavNatoceni()">Nastavit pootočení</button>
+        </div>
     </div>
 
-    <div class="scena">
-        <img id="obr2" src="2.png" alt="Obrázek na pozadí">
-        <img id="obr1" src="1.png" alt="Obrázek v popředí">
+    <!-- Pravá polovina obrazovky -->
+    <div class="pravy-panel">
+        <div class="scena">
+            <svg id="kreslici-platno">
+                <defs>
+                    <marker id="hrot-modry" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="blue" />
+                    </marker>
+                    <marker id="hrot-zeleny" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="green" />
+                    </marker>
+                    <marker id="hrot-cerveny-konec" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="red" />
+                    </marker>
+                    <marker id="hrot-cerveny-start" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+                        <path d="M 10 0 L 0 5 L 10 10 z" fill="red" />
+                    </marker>
+                </defs>
+                <g id="staticke-sipky"></g>
+                <g id="cervene-sipky"></g>
+            </svg>
+            <div id="vrstva-vnitrni"></div>
+            <div id="vrstva-vnejsi"></div>
+        </div>
     </div>
 
     <script>
-        function nastavNatoceni() {
-            // 1. Získáme textové pole a prvek obrázku z pozadí
-            let inputPole = document.getElementById("poziceUzivatele");
-            let obrVpozadi = document.getElementById("obr2");
+        const vrstvaVnitrni = document.getElementById('vrstva-vnitrni');
+        const vrstvaVnejsi = document.getElementById('vrstva-vnejsi');
+        const platno = document.getElementById('kreslici-platno');
+        const skupinaStaticke = document.getElementById('staticke-sipky');
+        const skupinaCervene = document.getElementById('cervene-sipky');
+        
+        const x = 90; 
+        const stredSceny = 300; 
 
-            // 2. Převedeme text na celé číslo
-            let cislo = parseInt(inputPole.value);
+        function prevedCisloNaZnaky(cislo) {
+            let vysledek = "";
+            let zbytek = cislo;
 
-            // 3. Zkontrolujeme validitu (zda je to číslo a zda je v rozmezí 1-12)
-            if (isNaN(cislo) || cislo < 1 || cislo > 12) {
-                alert("Prosím zadejte platné číslo od 1 do 12.");
-                return; // Ukončíme funkci, dál nepokračujeme
+            let pocetOsmicek = Math.floor(zbytek / 8);
+            for(let i = 0; i < pocetOsmicek; i++) vysledek += "|";
+            zbytek = zbytek % 8; 
+
+            let pocetDvojek = Math.floor(zbytek / 2);
+            for(let i = 0; i < pocetDvojek; i++) vysledek += "/";
+            zbytek = zbytek % 2; 
+
+            if (zbytek === 1) vysledek += ".";
+
+            return vysledek;
+        }
+
+        function ziskejSouradnice(index, pocetObrazku, polomer, posunStupnu) {
+            let uhelRadiany = (index * (360 / pocetObrazku) - 90 + posunStupnu) * (Math.PI / 180);
+            return {
+                x: stredSceny + Math.cos(uhelRadiany) * polomer,
+                y: stredSceny + Math.sin(uhelRadiany) * polomer
+            };
+        }
+
+        function zkratitCaru(x1, y1, x2, y2, zkraceniStart, zkraceniCil) {
+            let dx = x2 - x1;
+            let dy = y2 - y1;
+            let celkovaDelka = Math.sqrt(dx * dx + dy * dy); 
+            
+            let pomerStart = zkraceniStart / celkovaDelka;
+            let pomerCil = zkraceniCil / celkovaDelka;
+
+            return {
+                x1: x1 + dx * pomerStart,
+                y1: y1 + dy * pomerStart,
+                x2: x2 - dx * pomerCil,
+                y2: y2 - dy * pomerCil
+            };
+        }
+
+        function vytvorKruzku(startovniCislo, pocetObrazku, polomer, posunStupnu, cilovaVrstva) {
+            const uhelKrok = 360 / pocetObrazku;
+            for (let i = 0; i < pocetObrazku; i++) {
+                let uhelRadiany = (i * uhelKrok - 90 + posunStupnu) * (Math.PI / 180);
+                let poziceX = Math.cos(uhelRadiany) * polomer;
+                let poziceY = Math.sin(uhelRadiany) * polomer;
+
+                let puvodniCislo = startovniCislo + i;
+                let cisloProPopisek = puvodniCislo;
+
+                if (startovniCislo === 1) { 
+                    if (puvodniCislo === 1) {
+                        puvodniCislo = 6;
+                    } else if (puvodniCislo === 6) {
+                        puvodniCislo = 1;
+                    } else if (puvodniCislo === 3) {
+                        puvodniCislo = 5;
+                    } else if (puvodniCislo === 5) {
+                        puvodniCislo = 3;
+                    }
+                    cisloProPopisek = puvodniCislo; 
+                    
+                } else if (startovniCislo === 7) { 
+                    puvodniCislo = 25 - puvodniCislo; 
+                    cisloProPopisek = puvodniCislo + 6;
+                }
+
+                let img = document.createElement('img');
+                img.src = puvodniCislo + '.png'; 
+                img.className = 'maly-obrazek';
+                img.style.left = `calc(50% + ${poziceX}px)`;
+                img.style.top = `calc(50% + ${poziceY}px)`;
+                
+                img.title = prevedCisloNaZnaky(cisloProPopisek);
+                
+                cilovaVrstva.appendChild(img);
+            }
+        }
+
+        vytvorKruzku(1, 6, x, 30, vrstvaVnitrni);
+        vytvorKruzku(7, 12, 3 * x, 15, vrstvaVnejsi);
+
+        for (let i = 0; i < 6; i++) {
+            let poziceStartModra = ziskejSouradnice(i, 6, x, 30);
+            let poziceCilModra = ziskejSouradnice(i * 2, 12, 3 * x, 15);
+            let zkracenaModra = zkratitCaru(poziceStartModra.x, poziceStartModra.y, poziceCilModra.x, poziceCilModra.y, 30, 40);
+
+            let sipkaModra = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            sipkaModra.setAttribute('x1', zkracenaModra.x1);
+            sipkaModra.setAttribute('y1', zkracenaModra.y1);
+            sipkaModra.setAttribute('x2', zkracenaModra.x2);
+            sipkaModra.setAttribute('y2', zkracenaModra.y2);
+            sipkaModra.setAttribute('stroke', 'blue');
+            sipkaModra.setAttribute('stroke-width', '5');
+            sipkaModra.setAttribute('marker-end', 'url(#hrot-modry)');
+            skupinaStaticke.appendChild(sipkaModra);
+
+            let poziceStartZelena = ziskejSouradnice(i * 2 + 1, 12, 3 * x, 15); 
+            let poziceCilZelena = ziskejSouradnice(i, 6, x, 30);                
+            let zkracenaZelena = zkratitCaru(poziceStartZelena.x, poziceStartZelena.y, poziceCilZelena.x, poziceCilZelena.y, 30, 40);
+
+            let sipkaZelena = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            sipkaZelena.setAttribute('x1', zkracenaZelena.x1);
+            sipkaZelena.setAttribute('y1', zkracenaZelena.y1);
+            sipkaZelena.setAttribute('x2', zkracenaZelena.x2);
+            sipkaZelena.setAttribute('y2', zkracenaZelena.y2);
+            sipkaZelena.setAttribute('stroke', 'green');
+            sipkaZelena.setAttribute('stroke-width', '5');
+            sipkaZelena.setAttribute('marker-end', 'url(#hrot-zeleny)');
+            skupinaStaticke.appendChild(sipkaZelena);
+        }
+
+        function prekresliCerveneSipky(cislo) {
+            skupinaCervene.innerHTML = ''; 
+            let zbytek = cislo % 3;
+            let paryKPropojeni = [];
+
+            if (zbytek === 1) { 
+                paryKPropojeni = [[5, 0], [1, 2], [3, 4]]; 
+            } else if (zbytek === 2) { 
+                paryKPropojeni = [[5, 2], [0, 3], [4, 1]]; 
+            } else { 
+                paryKPropojeni = [[0, 1], [2, 3], [4, 5]]; 
             }
 
-            // 4. Výpočet úhlu: 
-            // Podle zadání: 1 = 0°, 12 = 330°, krok je 30°.
-            // Vzorec: (zadané číslo - 1) * 30 stupňů.
-            // Příklad pro číslo 1: (1-1)*30 = 0°
-            // Příklad pro číslo 2: (2-1)*30 = 30°
-            // Příklad pro číslo 12: (12-1)*30 = 330°
-            let uhel = (cislo - 1) * 30;
+            paryKPropojeni.forEach(par => {
+                let poziceStart = ziskejSouradnice(par[0], 6, x, 30);
+                let poziceCil = ziskejSouradnice(par[1], 6, x, 30);
+                
+                let zkracena = zkratitCaru(poziceStart.x, poziceStart.y, poziceCil.x, poziceCil.y, 40, 40);
 
-            // 5. Aplikujeme rotaci pomocí CSS
-            // Výsledek bude vypadat např. jako: transform: rotate(150deg);
-            obrVpozadi.style.transform = "rotate(" + uhel + "deg)";
+                let cervenaSipka = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                cervenaSipka.setAttribute('x1', zkracena.x1);
+                cervenaSipka.setAttribute('y1', zkracena.y1);
+                cervenaSipka.setAttribute('x2', zkracena.x2);
+                cervenaSipka.setAttribute('y2', zkracena.y2);
+                cervenaSipka.setAttribute('stroke', 'red');
+                cervenaSipka.setAttribute('stroke-width', '5');
+                cervenaSipka.setAttribute('marker-start', 'url(#hrot-cerveny-start)');
+                cervenaSipka.setAttribute('marker-end', 'url(#hrot-cerveny-konec)');
+                
+                skupinaCervene.appendChild(cervenaSipka);
+            });
+        }
+
+        prekresliCerveneSipky(1);
+
+        // Umožní potvrzení Enterem v poli pro číslo
+        document.getElementById("poziceUzivatele").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                nastavNatoceni();
+            }
+        });
+
+        function nastavNatoceni() {
+            let inputPole = document.getElementById("poziceUzivatele");
+            let cislo = parseInt(inputPole.value);
+
+            if (isNaN(cislo) || cislo < 1 || cislo > 12) {
+                alert("Prosím zadejte platné číslo od 1 do 12.");
+                return; 
+            }
+
+            let uhel = -(cislo - 1) * 30;
+
+            platno.style.opacity = "0";
+            vrstvaVnejsi.style.transform = "rotate(" + uhel + "deg)";
+
+            let obrazkyVenku = vrstvaVnejsi.querySelectorAll('.maly-obrazek');
+            obrazkyVenku.forEach(img => {
+                img.style.transform = "translate(-50%, -50%) rotate(" + (-uhel) + "deg)";
+            });
+
+            setTimeout(function() {
+                prekresliCerveneSipky(cislo);
+                platno.style.opacity = "1";
+            }, 500);
         }
     </script>
-
 </body>
 </html>
